@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+    nginx:
+      image: nginx:1.23.1
+      ports:
+      - 8080:8080
+    postgres:
+        image: postgres:14
+        volumes:
+            - postgres_data:/var/lib/postgresql/data/
+        environment:
+            - POSTGRES_DB=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+        ports:
+            - 5432:5432
+        restart: always
+        networks:
+              - app-network
+    app:
+        build: .
+        command: python web/manage.py runserver 0.0.0.0:8005
+        volumes:
+            - .:/docker_django
+        ports:
+          -  8005:8005
+        environment:
+            - SECRET_KEY=postgres
+        depends_on:
+            - postgres
+        networks:
+            - app-network
+        expose:
+            - 8015
+        
+networks:
+      app-network:
+          driver: bridge
+
+volumes:
+    postgres_data:  
+  
